@@ -1,26 +1,39 @@
 {
+    "Version": "2012-10-17",
     "Statement": [
         {
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::kubernetes-*"
+            ]
+        },
+        {
+            "Effect": "Allow",
             "Action": "ec2:Describe*",
-            "Effect": "Allow",
             "Resource": "*"
         },
         {
+            "Effect": "Allow",
             "Action": "ec2:AttachVolume",
-            "Effect": "Allow",
             "Resource": "*"
         },
         {
+            "Effect": "Allow",
             "Action": "ec2:DetachVolume",
-            "Effect": "Allow",
             "Resource": "*"
         },
         {
-            "Action": "kms:Decrypt",
             "Effect": "Allow",
-            "Resource": "${kms_arn}"
+            "Action": [
+                "route53:*"
+            ],
+            "Resource": [
+                "*"
+            ]
         },
         {
+            "Effect": "Allow",
             "Action": [
                 "ecr:GetAuthorizationToken",
                 "ecr:BatchCheckLayerAvailability",
@@ -30,9 +43,7 @@
                 "ecr:ListImages",
                 "ecr:BatchGetImage"
             ],
-            "Resource": "*",
-            "Effect": "Allow"
+            "Resource": "*"
         }
-    ],
-    "Version": "2012-10-17"
+    ]
 }

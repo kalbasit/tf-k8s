@@ -6,10 +6,6 @@ resource "aws_iam_role" "k8s-master" {
 
 data "template_file" "k8s-master-iam-role-policy" {
   template = "${file("${path.module}/templates/policy-k8s-master-role.json")}"
-
-  vars {
-    kms_arn = "${aws_kms_key.enc-dec.arn}"
-  }
 }
 
 resource "aws_iam_role_policy" "k8s-master" {
