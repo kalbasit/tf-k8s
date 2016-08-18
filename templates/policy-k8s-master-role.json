@@ -1,0 +1,20 @@
+{
+    "Statement": [
+        {
+            "Action": "ec2:*",
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Action": "elasticloadbalancing:*",
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Action": "kms:Decrypt",
+            "Effect": "Allow",
+            "Resource": "${kms_arn}"
+        }
+    ],
+    "Version": "2012-10-17"
+}

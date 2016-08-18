@@ -1,0 +1,86 @@
+#cloud-config
+
+coreos:
+  update:
+    reboot-strategy: off
+  etcd2:
+    discovery: "${discovery_url}"
+    listen-client-urls: "http://0.0.0.0:2379"
+  units:
+    - name: update-engine.service
+      command: "stop"
+      mask: true
+    - name: etcd.service
+      mask: true
+    - name: etcd2.service
+      command: "start"
+    - name: flanneld.service
+      command: "start"
+    - name: setup-bootkube.service
+      command: "start"
+      content: |
+        [Unit]
+        Description=Render cluster assets
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/etc/environment
+        ExecStart=/usr/bin/rkt run \
+          --volume home,kind=host,source=/home/core --mount volume=home,target=/core \
+          --trust-keys-from-https --net=host ${bootkube_repo}:${bootkube_version} \
+          --exec /bootkube -- render --asset-dir=/core/assets \
+          --api-servers=https://$${COREOS_PUBLIC_IPV4}:443,https://$${COREOS_PRIVATE_IPV4}:443
+        ExecStartPost=/usr/bin/mkdir -p /etc/kubernetes
+        ExecStartPost=/usr/bin/cp /home/core/assets/auth/kubeconfig /etc/kubernetes/
+        ExecStartPost=/usr/bin/chown -R core:core /home/core/assets
+        RemainAfterExit=yes
+    - name: kubelet.service
+      command: "start"
+      content: |
+        [Unit]
+        Requires=docker.service flanneld.service setup-bootkube.service
+        After=docker.service flanneld.service setup-bootkube.service
+
+        [Service]
+        Environment=KUBELET_ACI=${kubelet_repo}
+        Environment=KUBELET_VERSION=${kubelet_version}
+        Environment="RKT_OPTS=--volume etc-resolv,kind=host,source=/etc/resolv.conf --mount volume=etc-resolv,target=/etc/resolv.conf"
+        EnvironmentFile=/etc/environment
+
+        ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
+        ExecStartPre=/bin/mkdir -p /srv/kubernetes/manifests
+        ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
+        ExecStart=/usr/lib/coreos/kubelet-wrapper \
+          --api-servers=https://$${COREOS_PRIVATE_IPV4}:443 \
+          --kubeconfig=/etc/kubernetes/kubeconfig \
+          --lock-file=/var/run/lock/kubelet.lock \
+          --exit-on-lock-contention \
+          --allow-privileged \
+          --hostname-override=$${COREOS_PRIVATE_IPV4} \
+          --node-labels=master=true \
+          --minimum-container-ttl-duration=3m0s \
+          --cluster_dns=${kubelet_cluster_dns} \
+          --cluster_domain=cluster.local \
+          --config=/etc/kubernetes/manifests
+
+        Restart=always
+        RestartSec=5
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: bootkube.service
+      command: "start"
+      content: |
+        [Unit]
+        Description=Start bootkube to launch a self-hosted cluster
+        Requires=kubelet.service
+        After=kubelet.service
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/etc/environment
+        ExecStart=/usr/bin/rkt run --volume home,kind=host,source=/home/core \
+          --mount volume=home,target=/core --net=host \
+          ${bootkube_repo}:${bootkube_version} \
+          --exec /bootkube -- start --asset-dir=/core/assets
+        RemainAfterExit=yes
