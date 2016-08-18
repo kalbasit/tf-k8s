@@ -13,12 +13,26 @@ coreos:
       command: "start"
     - name: flanneld.service
       command: "start"
+    - name: copy-kubernetes-config-from-master.service
+      command: "start"
+      content: |
+        [Service]
+        Type=oneshot
+        ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes
+        ExecStartPre=/usr/bin/ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null \
+          -i /home/core/.ssh/id_rsa core@${master_private_ip} \
+          "while [ ! -f /home/core/assets/auth/kubeconfig ]; do echo 'Waiting for /home/core/assets/auth/kubeconfig...'; sleep 1; done"
+        ExecStart=/usr/bin/scp -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null \
+          -i /home/core/.ssh/id_rsa core@${master_private_ip}:/home/core/assets/auth/kubeconfig \
+          /etc/kubernetes/kubeconfig
+        ExecStartPost=/usr/bin/rm -f /home/core/.ssh/id_rsa
+        RemainAfterExit=yes
     - name: kubelet.service
       command: "start"
       content: |
         [Unit]
-        Requires=docker.service flanneld.service
-        After=docker.service flanneld.service
+        Requires=docker.service flanneld.service copy-kubernetes-config-from-master.service
+        After=docker.service flanneld.service copy-kubernetes-config-from-master.service
 
         [Service]
         Environment=KUBELET_ACI=${kubelet_repo}
@@ -27,6 +41,10 @@ coreos:
         EnvironmentFile=/etc/environment
 
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
+        ExecStartPre=/usr/bin/sh -c "while [ ! -f /etc/kubernetes/kubeconfig ]; do \
+            echo 'Waiting for /etc/kubernetes/kubeconfig...'; \
+            sleep 1; \
+          done"
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
           --api-servers=https://${master_private_ip}:443 \
           --kubeconfig=/etc/kubernetes/kubeconfig \
@@ -45,8 +63,8 @@ coreos:
         [Install]
         WantedBy=multi-user.target
 write_files:
-  - path: /etc/kubernetes/kubeconfig
-    permissions: 0644
-    owner: root:root
+  - path: /home/core/.ssh/id_rsa
+    permissions: 0400
+    owner: core:core
     encoding: base64
-    content: ${kubeconfig}
+    content: ${aws_private_key}

@@ -24,18 +24,13 @@ resource "aws_iam_instance_profile" "k8s-worker" {
   roles = ["${aws_iam_role.k8s-worker.name}"]
 }
 
-data "template_file" "kubeconfig" {
-  template   = "${file("${var.asset_path}/auth/kubeconfig")}"
-  depends_on = ["aws_instance.k8s-master"]
-}
-
 data "template_file" "worker-cloud-config" {
   template = "${file("${path.module}/templates/worker-cloud-config.yml")}"
 
   vars {
     discovery_url       = "${var.discovery_url}"
     master_private_ip   = "${aws_instance.k8s-master.0.private_ip}"
-    kubeconfig          = "${base64encode(data.template_file.kubeconfig.rendered)}"
+    aws_private_key     = "${base64encode(var.master_aws_private_key)}"
     kubelet_repo        = "${var.kubelet_repo}"
     kubelet_version     = "${var.kubelet_version}"
     kubelet_cluster_dns = "${var.kubelet_cluster_dns}"

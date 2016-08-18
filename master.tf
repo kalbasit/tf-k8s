@@ -63,6 +63,15 @@ resource "aws_instance" "k8s-master" {
     bastion_host = "${var.bastion_host}"
   }
 
+  # The following provisioner allows us to force terraform to wait for SSH to
+  # be available through the bastion. This is needed for the next local-exec
+  # provisioner.
+  provisioner "remote-exec" {
+    inline = [
+      "/usr/bin/true",
+    ]
+  }
+
   # The following provisioner are a hack due to the lack of `file-remote`
   # provisioner.
   # Ref: https://github.com/hashicorp/terraform/issues/3379
