@@ -99,92 +99,92 @@ variable "master_node_count" {
 }
 
 /** WORKER **/
-variable "worker_ami" {
-  description = "The AMI for the worker nodes"
+variable "minion_ami" {
+  description = "The AMI for the minion nodes"
   type        = "string"
 }
 
-variable "worker_aws_key_name" {
-  description = "The AWS key name for the worker nodes"
+variable "minion_aws_key_name" {
+  description = "The AWS key name for the minion nodes"
   type        = "string"
 }
 
-variable "worker_sgs_ids" {
-  description = "A list of security group ids for the worker nodes"
+variable "minion_sgs_ids" {
+  description = "A list of security group ids for the minion nodes"
   type        = "list"
 }
 
-variable "worker_azs" {
+variable "minion_azs" {
   description = "A list of Availability zones in the region"
   type        = "list"
 }
 
-variable "worker_subnet_ids" {
-  description = "A list of subnet ids for the worker nodes. Must be public subnet."
+variable "minion_subnet_ids" {
+  description = "A list of subnet ids for the minion nodes. Must be public subnet."
   type        = "list"
 }
 
-variable "worker_instance_type" {
-  description = "The instance type for the worker nodes"
+variable "minion_instance_type" {
+  description = "The instance type for the minion nodes"
   default     = "m3.medium"
   type        = "string"
 }
 
-variable "worker_scaling_group_min_size" {
-  description = "The minimum size of the worker scaling group"
+variable "minion_scaling_group_min_size" {
+  description = "The minimum size of the minion scaling group"
   default     = "2"
   type        = "string"
 }
 
-variable "worker_scaling_group_max_size" {
-  description = "The maximum size of the worker scaling group"
+variable "minion_scaling_group_max_size" {
+  description = "The maximum size of the minion scaling group"
   default     = "20"
   type        = "string"
 }
 
-variable "worker_scale_up_adjustment" {
+variable "minion_scale_up_adjustment" {
   description = "The scaling adjustment for scaling up"
   default     = "1"
   type        = "string"
 }
 
-variable "worker_scale_up_cooldown" {
+variable "minion_scale_up_cooldown" {
   description = "The scaling cooldown for scaling up"
   default     = "300"
   type        = "string"
 }
 
-variable "worker_scale_down_adjustment" {
+variable "minion_scale_down_adjustment" {
   description = "The scaling adjustment for scaling down"
   default     = "-1"
   type        = "string"
 }
 
-variable "worker_scale_down_cooldown" {
+variable "minion_scale_down_cooldown" {
   description = "The scaling cooldown for scaling down"
   default     = "300"
   type        = "string"
 }
 
-variable "worker_scaling_mem_lower_avg_threshold" {
+variable "minion_scaling_mem_lower_avg_threshold" {
   description = "The average lower memory threshold for scaling down"
   default     = "40"
   type        = "string"
 }
 
-variable "worker_scaling_mem_upper_avg_threshold" {
+variable "minion_scaling_mem_upper_avg_threshold" {
   description = "The average upper memory threshold for scaling down"
   default     = "80"
   type        = "string"
 }
 
-variable "worker_scaling_cpu_lower_avg_threshold" {
+variable "minion_scaling_cpu_lower_avg_threshold" {
   description = "The average lower cpu threshold for scaling down"
   default     = "25"
   type        = "string"
 }
 
-variable "worker_scaling_cpu_upper_avg_threshold" {
+variable "minion_scaling_cpu_upper_avg_threshold" {
   description = "The average upper cpu threshold for scaling down"
   default     = "75"
   type        = "string"

@@ -43,17 +43,17 @@ module "k8s_us-east-1-staging" {
   ]
 
   /** WORKER **/
-  worker_ami             = "ami-6d138f7a"
-  worker_aws_key_name    = "ec2-key-name"
+  minion_ami             = "ami-6d138f7a"
+  minion_aws_key_name    = "ec2-key-name"
 
-  worker_subnet_ids = ["subnet-b73bc4f5"]
+  minion_subnet_ids = ["subnet-b73bc4f5"]
 
-  worker_sgs_ids = [
+  minion_sgs_ids = [
     "${module.sgs.out-pub}",
     "${module.sgs.in-self}",
   ]
 
-  worker_azs = [
+  minion_azs = [
     "us-east-1a",
     "us-east-1b",
     "us-east-1d",
@@ -81,22 +81,22 @@ module "k8s_us-east-1-staging" {
 - `master_subnet_ids` A list of subnet ids for the master nodes. Must be public subnet.
 - `master_instance_type` The instance type for the master nodes
 - `master_node_count` The number of master nodes to bring up.
-- `worker_ami` The AMI for the worker nodes
-- `worker_aws_key_name` The AWS key name for the worker nodes
-- `worker_sgs_ids` A list of security group ids for the worker nodes
-- `worker_azs` A list of Availability zones in the region
-- `worker_subnet_ids` A list of subnet ids for the worker nodes. Must be public subnet.
-- `worker_instance_type` The instance type for the worker nodes
-- `worker_scaling_group_min_size` The minimum size of the worker scaling group
-- `worker_scaling_group_max_size` The maximum size of the worker scaling group
-- `worker_scale_up_adjustment` The scaling adjustment for scaling up
-- `worker_scale_up_cooldown` The scaling cooldown for scaling up
-- `worker_scale_down_adjustment` The scaling adjustment for scaling down
-- `worker_scale_down_cooldown` The scaling cooldown for scaling down
-- `worker_scaling_mem_lower_avg_threshold` The average lower memory threshold for scaling down
-- `worker_scaling_mem_upper_avg_threshold` The average upper memory threshold for scaling down
-- `worker_scaling_cpu_lower_avg_threshold` The average lower cpu threshold for scaling down
-- `worker_scaling_cpu_upper_avg_threshold` The average upper cpu threshold for scaling down
+- `minion_ami` The AMI for the minion nodes
+- `minion_aws_key_name` The AWS key name for the minion nodes
+- `minion_sgs_ids` A list of security group ids for the minion nodes
+- `minion_azs` A list of Availability zones in the region
+- `minion_subnet_ids` A list of subnet ids for the minion nodes. Must be public subnet.
+- `minion_instance_type` The instance type for the minion nodes
+- `minion_scaling_group_min_size` The minimum size of the minion scaling group
+- `minion_scaling_group_max_size` The maximum size of the minion scaling group
+- `minion_scale_up_adjustment` The scaling adjustment for scaling up
+- `minion_scale_up_cooldown` The scaling cooldown for scaling up
+- `minion_scale_down_adjustment` The scaling adjustment for scaling down
+- `minion_scale_down_cooldown` The scaling cooldown for scaling down
+- `minion_scaling_mem_lower_avg_threshold` The average lower memory threshold for scaling down
+- `minion_scaling_mem_upper_avg_threshold` The average upper memory threshold for scaling down
+- `minion_scaling_cpu_lower_avg_threshold` The average lower cpu threshold for scaling down
+- `minion_scaling_cpu_upper_avg_threshold` The average upper cpu threshold for scaling down
 
 # Outputs
 
