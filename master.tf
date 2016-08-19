@@ -41,7 +41,7 @@ resource "aws_instance" "k8s-master" {
   instance_type           = "${var.master_instance_type}"
   iam_instance_profile    = "${aws_iam_instance_profile.k8s-master.id}"
   key_name                = "${var.master_aws_key_name}"
-  disable_api_termination = true
+  disable_api_termination = "${var.master_disable_api_termination}"
   vpc_security_group_ids  = ["${var.master_sgs_ids}"]
 
   tags {

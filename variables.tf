@@ -50,6 +50,11 @@ variable "asset_path" {
 }
 
 /** MASTER **/
+variable "master_disable_api_termination" {
+  description = "Enable EC2 Termination protection"
+  default     = true
+}
+
 variable "master_ami" {
   description = "The AMI for the master nodes"
   type        = "string"
