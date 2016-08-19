@@ -57,6 +57,10 @@ resource "aws_autoscaling_group" "k8s-worker" {
   vpc_zone_identifier       = ["${var.worker_subnet_ids}"]
   launch_configuration      = "${aws_launch_configuration.k8s-worker.name}"
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tag {
     key                 = "role"
     value               = "k8s-worker"
