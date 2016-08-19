@@ -25,12 +25,8 @@
         },
         {
             "Effect": "Allow",
-            "Action": [
-                "route53:*"
-            ],
-            "Resource": [
-                "*"
-            ]
+            "Action": "route53:*",
+            "Resource": "*"
         },
         {
             "Effect": "Allow",
