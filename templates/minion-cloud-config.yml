@@ -3,6 +3,8 @@
 coreos:
   update:
     reboot-strategy: etcd-lock
+  locksmith:
+    group: "k8s-minion"
   flannel:
     interface: $private_ipv4
     etcd_endpoints: "http://$private_ipv4:2379"

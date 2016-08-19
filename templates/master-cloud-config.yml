@@ -3,6 +3,8 @@
 coreos:
   update:
     reboot-strategy: off
+  locksmith:
+    group: "k8s-master"
   flannel:
     interface: $private_ipv4
     etcd_endpoints: "http://$private_ipv4:2379"
