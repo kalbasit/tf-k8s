@@ -67,7 +67,6 @@ module "k8s_us-east-1-staging" {
 - `name` The name of the cluster
 - `env` The environment of the cluster
 - `discovery_url` The discovery URL for etcd
-- `etcd_sg_id` The Security Group ID of the etcd nodes
 - `bastion_sg_id` The security group of the bastion
 - `bastion_host` The bastion HOST for the SSH connection
 - `bootkube_repo` The bootkube docker repository

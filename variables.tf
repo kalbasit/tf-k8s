@@ -19,11 +19,6 @@ variable "discovery_url" {
   type        = "string"
 }
 
-variable "etcd_sg_id" {
-  description = "The Security Group ID of the etcd nodes"
-  type        = "string"
-}
-
 variable "bastion_sg_id" {
   description = "The security group of the bastion"
   type        = "string"
