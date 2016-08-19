@@ -58,7 +58,8 @@ coreos:
           --minimum-container-ttl-duration=3m0s \
           --cluster_dns=${kubelet_cluster_dns} \
           --cluster_domain=cluster.local \
-          --config=/etc/kubernetes/manifests
+          --config=/etc/kubernetes/manifests \
+          --cloud-provider=aws
 
         Restart=always
         RestartSec=5
