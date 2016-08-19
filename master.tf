@@ -1,6 +1,6 @@
 resource "aws_iam_role" "k8s-master" {
   name               = "k8s-master"
-  path               = "/infra/k8s/master/"
+  path               = "/infra/${var.env}/k8s/master/"
   assume_role_policy = "${file("${path.module}/templates/assume-role-ec2.json")}"
 }
 
@@ -16,6 +16,7 @@ resource "aws_iam_role_policy" "k8s-master" {
 
 resource "aws_iam_instance_profile" "k8s-master" {
   name  = "k8s-master"
+  path  = "/infra/${var.env}/k8s/master/"
   roles = ["${aws_iam_role.k8s-master.name}"]
 }
 
@@ -32,6 +33,103 @@ data "template_file" "master-cloud-config" {
   }
 }
 
+resource "aws_security_group" "k8s-master" {
+  name_prefix = "k8s-master-"
+  description = "The security group for kubernetes master node."
+  vpc_id      = "${var.vpc_id}"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags {
+    KubernetesCluster = "${var.name}"
+    role              = "master"
+    env               = "${var.env}"
+  }
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-all-icmp-out" {
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = -1
+  to_port           = -1
+  protocol          = "icmp"
+  security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-all-tcp-out" {
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-all-udp-out" {
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "udp"
+  security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-all-icmp-in" {
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = -1
+  to_port           = -1
+  protocol          = "icmp"
+  security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-ssh-from-bastion" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  source_security_group_id = "${var.bastion_sg_id}"
+  security_group_id        = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-https-from-all" {
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-all-from-self" {
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  self              = true
+  security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-all-tcp-from-minion" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  security_group_id        = "${aws_security_group.k8s-master.id}"
+  source_security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-master-allow-all-udp-from-minion" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "udp"
+  security_group_id        = "${aws_security_group.k8s-master.id}"
+  source_security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
 resource "aws_instance" "k8s-master" {
   count                   = "${var.master_node_count}"
   ami                     = "${var.master_ami}"
@@ -42,7 +140,7 @@ resource "aws_instance" "k8s-master" {
   iam_instance_profile    = "${aws_iam_instance_profile.k8s-master.id}"
   key_name                = "${var.master_aws_key_name}"
   disable_api_termination = "${var.master_disable_api_termination}"
-  vpc_security_group_ids  = ["${var.master_sgs_ids}"]
+  vpc_security_group_ids  = ["${aws_security_group.k8s-master.id}"]
 
   tags {
     Name              = "k8s-master-${count.index}"

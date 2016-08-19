@@ -64,8 +64,11 @@ module "k8s_us-east-1-staging" {
 
 # Module input variables
 
+- `name` The name of the cluster
 - `env` The environment of the cluster
 - `discovery_url` The discovery URL for etcd
+- `etcd_sg_id` The Security Group ID of the etcd nodes
+- `bastion_sg_id` The security group of the bastion
 - `bastion_host` The bastion HOST for the SSH connection
 - `bootkube_repo` The bootkube docker repository
 - `bootkube_version` The bootkube docker image tag
@@ -76,14 +79,12 @@ module "k8s_us-east-1-staging" {
 - `master_ami` The AMI for the master nodes
 - `master_aws_key_name` The AWS key name for the master nodes
 - `master_aws_private_key` Content of the private key to use when connecting to the masters
-- `master_sgs_ids` A list of security group ids for the master nodes
 - `master_azs` A list of Availability zones in the region
 - `master_subnet_ids` A list of subnet ids for the master nodes. Must be public subnet.
 - `master_instance_type` The instance type for the master nodes
 - `master_node_count` The number of master nodes to bring up.
 - `minion_ami` The AMI for the minion nodes
 - `minion_aws_key_name` The AWS key name for the minion nodes
-- `minion_sgs_ids` A list of security group ids for the minion nodes
 - `minion_azs` A list of Availability zones in the region
 - `minion_subnet_ids` A list of subnet ids for the minion nodes. Must be public subnet.
 - `minion_instance_type` The instance type for the minion nodes
@@ -102,6 +103,8 @@ module "k8s_us-east-1-staging" {
 
 - `master_private_ip` The private IP of the master node
 - `master_public_ip` The public IP of the master node
+- `master_sgs_id` The security group id for the master nodes
+- `minion_sgs_id` The security group id for the minion nodes
 
 # License
 

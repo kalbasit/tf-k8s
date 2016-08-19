@@ -1,11 +1,31 @@
 /** GLOBAL **/
+variable "name" {
+  description = "The name of the cluster"
+  type        = "string"
+}
+
 variable "env" {
   description = "The environment of the cluster"
   type        = "string"
 }
 
+variable "vpc_id" {
+  description = "The ID of the VPC where the cluster is running on"
+  type        = "string"
+}
+
 variable "discovery_url" {
   description = "The discovery URL for etcd"
+  type        = "string"
+}
+
+variable "etcd_sg_id" {
+  description = "The Security Group ID of the etcd nodes"
+  type        = "string"
+}
+
+variable "bastion_sg_id" {
+  description = "The security group of the bastion"
   type        = "string"
 }
 
@@ -70,11 +90,6 @@ variable "master_aws_private_key" {
   type        = "string"
 }
 
-variable "master_sgs_ids" {
-  description = "A list of security group ids for the master nodes"
-  type        = "list"
-}
-
 variable "master_azs" {
   description = "A list of Availability zones in the region"
   type        = "list"
@@ -98,7 +113,7 @@ variable "master_node_count" {
   type        = "string"
 }
 
-/** WORKER **/
+/** MINION **/
 variable "minion_ami" {
   description = "The AMI for the minion nodes"
   type        = "string"
@@ -107,11 +122,6 @@ variable "minion_ami" {
 variable "minion_aws_key_name" {
   description = "The AWS key name for the minion nodes"
   type        = "string"
-}
-
-variable "minion_sgs_ids" {
-  description = "A list of security group ids for the minion nodes"
-  type        = "list"
 }
 
 variable "minion_azs" {

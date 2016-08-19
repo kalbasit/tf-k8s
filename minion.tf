@@ -1,6 +1,6 @@
 resource "aws_iam_role" "k8s-minion" {
   name               = "k8s-minion"
-  path               = "/infra/k8s/minion/"
+  path               = "/infra/${var.env}/k8s/minion/"
   assume_role_policy = "${file("${path.module}/templates/assume-role-ec2.json")}"
 }
 
@@ -16,7 +16,7 @@ resource "aws_iam_role_policy" "k8s-minion" {
 
 resource "aws_iam_instance_profile" "k8s-minion" {
   name  = "k8s-minion"
-  path  = "/infra/k8s/minion/"
+  path  = "/infra/${var.env}/k8s/minion/"
   roles = ["${aws_iam_role.k8s-minion.name}"]
 }
 
@@ -33,13 +33,106 @@ data "template_file" "minion-cloud-config" {
   }
 }
 
+resource "aws_security_group" "k8s-minion" {
+  name_prefix = "k8s-minion-"
+  description = "The security group for kubernetes minion node."
+  vpc_id      = "${var.vpc_id}"
+
+  tags {
+    KubernetesCluster = "${var.name}"
+    role              = "minion"
+    env               = "${var.env}"
+  }
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-all-icmp-out" {
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = -1
+  to_port           = -1
+  protocol          = "icmp"
+  security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-all-tcp-out" {
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-all-udp-out" {
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "udp"
+  security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-all-icmp-in" {
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = -1
+  to_port           = -1
+  protocol          = "icmp"
+  security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-ssh-from-bastion" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  source_security_group_id = "${var.bastion_sg_id}"
+  security_group_id        = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-https-from-all" {
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-all-from-self" {
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  self              = true
+  security_group_id = "${aws_security_group.k8s-minion.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-all-tcp-from-master" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  security_group_id        = "${aws_security_group.k8s-minion.id}"
+  source_security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
+resource "aws_security_group_rule" "k8s-minion-allow-all-udp-from-master" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "udp"
+  security_group_id        = "${aws_security_group.k8s-minion.id}"
+  source_security_group_id = "${aws_security_group.k8s-master.id}"
+}
+
 resource "aws_launch_configuration" "k8s-minion" {
   name_prefix          = "k8s-minion-"
   image_id             = "${var.minion_ami}"
   instance_type        = "${var.minion_instance_type}"
   iam_instance_profile = "${aws_iam_instance_profile.k8s-minion.id}"
   key_name             = "${var.minion_aws_key_name}"
-  security_groups      = ["${var.minion_sgs_ids}"]
+  security_groups      = ["${aws_security_group.k8s-minion.id}"]
   user_data            = "${data.template_file.minion-cloud-config.rendered}"
 
   lifecycle {
