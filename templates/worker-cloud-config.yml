@@ -3,6 +3,9 @@
 coreos:
   update:
     reboot-strategy: etcd-lock
+  flannel:
+    interface: $private_ipv4
+    etcd_endpoints: "http://$private_ipv4:2379"
   etcd2:
     discovery: "${discovery_url}"
     listen-client-urls: "http://0.0.0.0:2379"
@@ -10,9 +13,9 @@ coreos:
     - name: etcd.service
       mask: true
     - name: etcd2.service
-      command: "start"
+      command: "restart"
     - name: flanneld.service
-      command: "start"
+      command: "restart"
     - name: copy-kubernetes-config-from-master.service
       command: "start"
       content: |
