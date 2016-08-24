@@ -4,13 +4,15 @@ coreos:
   update:
     reboot-strategy: etcd-lock
   locksmith:
-    group: "k8s-minion"
+    group: k8s-minion
+    endpoint: "http://127.0.0.1:2379"
   flannel:
     interface: $private_ipv4
-    etcd_endpoints: "http://$private_ipv4:2379"
+    etcd_endpoints: "http://127.0.0.1:2379"
   etcd2:
+    proxy: on
     discovery: "${discovery_url}"
-    listen-client-urls: "http://0.0.0.0:2379"
+    listen-client-urls: "http://127.0.0.1:2379"
   units:
     - name: etcd.service
       mask: true
