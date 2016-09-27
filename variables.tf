@@ -108,6 +108,20 @@ variable "master_node_count" {
   type        = "string"
 }
 
+variable "master_iam_policies" {
+  description = "A list of policy arns to apply to masters"
+  default     = []
+  type        = "list"
+}
+
+// workaround for aws_iam_role_policy_attachment not supporting count
+// See https://github.com/hashicorp/terraform/issues/3851#issuecomment-155625720
+variable "master_iam_policies_count" {
+  description = "The count of `master_iam_policies`"
+  type        = "string"
+  default     = "0"
+}
+
 /** MINION **/
 variable "minion_ami" {
   description = "The AMI for the minion nodes"
@@ -193,4 +207,18 @@ variable "minion_scaling_cpu_upper_avg_threshold" {
   description = "The average upper cpu threshold for scaling down"
   default     = "75"
   type        = "string"
+}
+
+variable "minion_iam_policies" {
+  description = "A list of policy arns to apply to minions"
+  default     = []
+  type        = "list"
+}
+
+// workaround for aws_iam_role_policy_attachment not supporting count
+// See https://github.com/hashicorp/terraform/issues/3851#issuecomment-155625720
+variable "minion_iam_policies_count" {
+  description = "The count of `minion_iam_policies`"
+  type        = "string"
+  default     = "0"
 }

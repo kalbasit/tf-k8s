@@ -8,10 +8,21 @@ data "template_file" "k8s-minion-iam-role-policy" {
   template = "${file("${path.module}/templates/policy-k8s-minion-role.json")}"
 }
 
-resource "aws_iam_role_policy" "k8s-minion" {
+resource "aws_iam_policy" "k8s-minion" {
   name   = "k8s-minion"
-  role   = "${aws_iam_role.k8s-minion.id}"
   policy = "${data.template_file.k8s-minion-iam-role-policy.rendered}"
+}
+
+resource "aws_iam_role_policy_attachment" "k8s-minion" {
+  role       = "${aws_iam_role.k8s-minion.name}"
+  policy_arn = "${aws_iam_policy.k8s-minion.arn}"
+}
+
+resource "aws_iam_role_policy_attachment" "k8s-minion-extra" {
+  count = "${var.minion_iam_policies_count}"
+
+  role       = "${aws_iam_role.k8s-minion.name}"
+  policy_arn = "${element(var.minion_iam_policies, count.index)}"
 }
 
 resource "aws_iam_instance_profile" "k8s-minion" {

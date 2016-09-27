@@ -8,10 +8,21 @@ data "template_file" "k8s-master-iam-role-policy" {
   template = "${file("${path.module}/templates/policy-k8s-master-role.json")}"
 }
 
-resource "aws_iam_role_policy" "k8s-master" {
+resource "aws_iam_policy" "k8s-master" {
   name   = "k8s-master"
-  role   = "${aws_iam_role.k8s-master.id}"
   policy = "${data.template_file.k8s-master-iam-role-policy.rendered}"
+}
+
+resource "aws_iam_role_policy_attachment" "k8s-master" {
+  role       = "${aws_iam_role.k8s-master.name}"
+  policy_arn = "${aws_iam_policy.k8s-master.arn}"
+}
+
+resource "aws_iam_role_policy_attachment" "k8s-master-extra" {
+  count = "${var.master_iam_policies_count}"
+
+  role       = "${aws_iam_role.k8s-master.name}"
+  policy_arn = "${element(var.master_iam_policies, count.index)}"
 }
 
 resource "aws_iam_instance_profile" "k8s-master" {
