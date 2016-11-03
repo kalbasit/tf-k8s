@@ -28,6 +28,8 @@ coreos:
       content: |
         [Unit]
         Description=Render cluster assets
+        Requires=docker.service etcd2.service flanneld.service
+        After=docker.service etcd2.service flanneld.service
 
         [Service]
         Type=oneshot
@@ -45,8 +47,8 @@ coreos:
       command: "start"
       content: |
         [Unit]
-        Requires=docker.service flanneld.service setup-bootkube.service
-        After=docker.service flanneld.service setup-bootkube.service
+        Requires=docker.service etcd2.service flanneld.service setup-bootkube.service
+        After=docker.service etcd2.service flanneld.service setup-bootkube.service
 
         [Service]
         Environment=KUBELET_ACI=${kubelet_repo}
