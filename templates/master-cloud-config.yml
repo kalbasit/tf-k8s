@@ -71,6 +71,7 @@ coreos:
           --cluster_dns=${kubelet_cluster_dns} \
           --cluster_domain=cluster.local \
           --config=/etc/kubernetes/manifests \
+          --register-schedulable=false \
           --cloud-provider=aws
 
         Restart=always
