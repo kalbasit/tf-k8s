@@ -104,5 +104,5 @@ coreos:
           --volume ca-certs,kind=host,source=/etc/ssl/certs/ca-certificates.crt \
           --mount volume=ca-certs,target=/etc/ssl/certs/ca-certificates.crt \
           --net=host ${bootkube_repo}:${bootkube_version} \
-          --exec /bootkube -- start --asset-dir=/core/assets
+          --exec /bootkube -- start --asset-dir=/core/assets --etcd-prefix=${k8s_etcd_prefix}
         RemainAfterExit=yes
