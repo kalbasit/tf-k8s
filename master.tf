@@ -1,6 +1,6 @@
 resource "aws_iam_role" "k8s-master" {
-  name               = "k8s-master"
-  path               = "/infra/${var.env}/k8s/master/"
+  name               = "${var.name}-k8s-master"
+  path               = "/infra/${var.env}/k8s/${var.name}/master/"
   assume_role_policy = "${file("${path.module}/templates/assume-role-ec2.json")}"
 }
 
@@ -9,7 +9,7 @@ data "template_file" "k8s-master-iam-role-policy" {
 }
 
 resource "aws_iam_policy" "k8s-master" {
-  name   = "k8s-master"
+  name   = "${var.name}-k8s-master"
   policy = "${data.template_file.k8s-master-iam-role-policy.rendered}"
 }
 
@@ -26,8 +26,8 @@ resource "aws_iam_role_policy_attachment" "k8s-master-extra" {
 }
 
 resource "aws_iam_instance_profile" "k8s-master" {
-  name  = "k8s-master"
-  path  = "/infra/${var.env}/k8s/master/"
+  name  = "${var.name}-k8s-master"
+  path  = "/infra/${var.env}/k8s/${var.name}/master/"
   roles = ["${aws_iam_role.k8s-master.name}"]
 }
 
@@ -41,11 +41,13 @@ data "template_file" "master-cloud-config" {
     kubelet_version     = "${var.kubelet_version}"
     discovery_url       = "${var.discovery_url}"
     kubelet_cluster_dns = "${var.kubelet_cluster_dns}"
+    k8s_etcd_prefix     = "${var.k8s_etcd_prefix}"
+    flannel_etcd_prefix = "${var.flannel_etcd_prefix}"
   }
 }
 
 resource "aws_security_group" "k8s-master" {
-  name_prefix = "k8s-master-"
+  name_prefix = "${var.name}-k8s-master-"
   description = "The security group for kubernetes master node."
   vpc_id      = "${var.vpc_id}"
 
@@ -154,7 +156,7 @@ resource "aws_instance" "k8s-master" {
   vpc_security_group_ids  = ["${aws_security_group.k8s-master.id}"]
 
   tags {
-    Name              = "k8s-master-${count.index}"
+    Name              = "${var.name}-k8s-master-${count.index}"
     role              = "master"
     availability_zone = "${element(var.master_azs, count.index)}"
     env               = "${var.env}"

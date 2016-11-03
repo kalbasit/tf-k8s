@@ -1,6 +1,6 @@
 resource "aws_iam_role" "k8s-minion" {
-  name               = "k8s-minion"
-  path               = "/infra/${var.env}/k8s/minion/"
+  name               = "${var.name}-k8s-minion"
+  path               = "/infra/${var.env}/k8s/${var.name}/minion/"
   assume_role_policy = "${file("${path.module}/templates/assume-role-ec2.json")}"
 }
 
@@ -9,7 +9,7 @@ data "template_file" "k8s-minion-iam-role-policy" {
 }
 
 resource "aws_iam_policy" "k8s-minion" {
-  name   = "k8s-minion"
+  name   = "${var.name}-k8s-minion"
   policy = "${data.template_file.k8s-minion-iam-role-policy.rendered}"
 }
 
@@ -26,8 +26,8 @@ resource "aws_iam_role_policy_attachment" "k8s-minion-extra" {
 }
 
 resource "aws_iam_instance_profile" "k8s-minion" {
-  name  = "k8s-minion"
-  path  = "/infra/${var.env}/k8s/minion/"
+  name  = "${var.name}-k8s-minion"
+  path  = "/infra/${var.env}/k8s/${var.name}/minion/"
   roles = ["${aws_iam_role.k8s-minion.name}"]
 }
 
@@ -41,11 +41,12 @@ data "template_file" "minion-cloud-config" {
     kubelet_repo        = "${var.kubelet_repo}"
     kubelet_version     = "${var.kubelet_version}"
     kubelet_cluster_dns = "${var.kubelet_cluster_dns}"
+    flannel_etcd_prefix = "${var.flannel_etcd_prefix}"
   }
 }
 
 resource "aws_security_group" "k8s-minion" {
-  name_prefix = "k8s-minion-"
+  name_prefix = "${var.name}-k8s-minion-"
   description = "The security group for kubernetes minion node."
   vpc_id      = "${var.vpc_id}"
 
@@ -138,7 +139,7 @@ resource "aws_security_group_rule" "k8s-minion-allow-all-udp-from-master" {
 }
 
 resource "aws_launch_configuration" "k8s-minion" {
-  name_prefix          = "k8s-minion-"
+  name_prefix          = "${var.name}-k8s-minion-"
   image_id             = "${var.minion_ami}"
   instance_type        = "${var.minion_instance_type}"
   iam_instance_profile = "${aws_iam_instance_profile.k8s-minion.id}"
@@ -153,7 +154,7 @@ resource "aws_launch_configuration" "k8s-minion" {
 
 resource "aws_autoscaling_group" "k8s-minion" {
   availability_zones        = ["${var.minion_azs}"]
-  name                      = "k8s-minion"
+  name                      = "${var.name}-k8s-minion"
   max_size                  = "${var.minion_scaling_group_max_size}"
   min_size                  = "${var.minion_scaling_group_min_size}"
   health_check_grace_period = 300
@@ -179,7 +180,7 @@ resource "aws_autoscaling_group" "k8s-minion" {
 }
 
 resource "aws_autoscaling_policy" "k8s-minions-scale-up" {
-  name                   = "minions-scale-up"
+  name                   = "${var.name}-minions-scale-up"
   scaling_adjustment     = "${var.minion_scale_up_adjustment}"
   adjustment_type        = "ChangeInCapacity"
   cooldown               = "${var.minion_scale_up_cooldown}"
@@ -187,7 +188,7 @@ resource "aws_autoscaling_policy" "k8s-minions-scale-up" {
 }
 
 resource "aws_autoscaling_policy" "k8s-minions-scale-down" {
-  name                   = "minions-scale-down"
+  name                   = "${var.name}-minions-scale-down"
   scaling_adjustment     = "${var.minion_scale_down_adjustment}"
   adjustment_type        = "ChangeInCapacity"
   cooldown               = "${var.minion_scale_down_cooldown}"
@@ -195,7 +196,7 @@ resource "aws_autoscaling_policy" "k8s-minions-scale-down" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "k8s-minion-memory-high" {
-  alarm_name          = "k8s-minion-memory-high"
+  alarm_name          = "${var.name}-k8s-minion-memory-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "MemoryUtilization"
@@ -215,7 +216,7 @@ resource "aws_cloudwatch_metric_alarm" "k8s-minion-memory-high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "k8s-minion-memory-low" {
-  alarm_name          = "k8s-minion-memory-low"
+  alarm_name          = "${var.name}-k8s-minion-memory-low"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "MemoryUtilization"
@@ -235,7 +236,7 @@ resource "aws_cloudwatch_metric_alarm" "k8s-minion-memory-low" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "k8s-minion-cpu-high" {
-  alarm_name          = "k8s-minion-cpu-high"
+  alarm_name          = "${var.name}-k8s-minion-cpu-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
@@ -255,7 +256,7 @@ resource "aws_cloudwatch_metric_alarm" "k8s-minion-cpu-high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "k8s-minion-cpu-low" {
-  alarm_name          = "k8s-minion-cpu-low"
+  alarm_name          = "${var.name}-k8s-minion-cpu-low"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"

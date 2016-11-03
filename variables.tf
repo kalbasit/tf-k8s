@@ -64,6 +64,16 @@ variable "asset_path" {
   type        = "string"
 }
 
+variable "k8s_etcd_prefix" {
+  description = "The etcd_prefix for kubernetes"
+  type        = "string"
+}
+
+variable "flannel_etcd_prefix" {
+  description = "The flannel_etcd_prefix"
+  type        = "string"
+}
+
 /** MASTER **/
 variable "master_disable_api_termination" {
   description = "Enable EC2 Termination protection"

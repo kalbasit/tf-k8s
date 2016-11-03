@@ -9,6 +9,7 @@ coreos:
   flannel:
     interface: $private_ipv4
     etcd_endpoints: "http://127.0.0.1:2379"
+    etcd_prefix: ${flannel_etcd_prefix}
   etcd2:
     proxy: on
     discovery: "${discovery_url}"
@@ -38,8 +39,8 @@ coreos:
       command: "start"
       content: |
         [Unit]
-        Requires=docker.service flanneld.service copy-kubernetes-config-from-master.service
-        After=docker.service flanneld.service copy-kubernetes-config-from-master.service
+        Requires=docker.service flanneld.service etcd2.service copy-kubernetes-config-from-master.service
+        After=docker.service flanneld.service etcd2.service copy-kubernetes-config-from-master.service
 
         [Service]
         Environment=KUBELET_ACI=${kubelet_repo}

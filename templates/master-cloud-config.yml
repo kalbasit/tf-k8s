@@ -9,6 +9,7 @@ coreos:
   flannel:
     interface: $private_ipv4
     etcd_endpoints: "http://127.0.0.1:2379"
+    etcd_prefix: ${flannel_etcd_prefix}
   etcd2:
     proxy: on
     discovery: "${discovery_url}"
@@ -23,11 +24,18 @@ coreos:
       command: "restart"
     - name: flanneld.service
       command: "restart"
+      drop-ins:
+      - name: 50-network-config.conf
+        content: |
+          [Service]
+          ExecStartPre=-/usr/bin/etcdctl set ${flannel_etcd_prefix}/config '{"Network": "10.2.0.0/16", "Backend":{"Type":"vxlan"}}'
     - name: setup-bootkube.service
       command: "start"
       content: |
         [Unit]
         Description=Render cluster assets
+        Requires=docker.service etcd2.service flanneld.service
+        After=docker.service etcd2.service flanneld.service
 
         [Service]
         Type=oneshot
@@ -36,7 +44,8 @@ coreos:
           --volume home,kind=host,source=/home/core --mount volume=home,target=/core \
           --trust-keys-from-https --net=host ${bootkube_repo}:${bootkube_version} \
           --exec /bootkube -- render --asset-dir=/core/assets \
-          --api-servers=https://$${COREOS_PUBLIC_IPV4}:443,https://$${COREOS_PRIVATE_IPV4}:443
+          --api-servers=https://$${COREOS_PUBLIC_IPV4}:443,https://$${COREOS_PRIVATE_IPV4}:443 \
+          --etcd-prefix=${k8s_etcd_prefix}
         ExecStartPost=/usr/bin/mkdir -p /etc/kubernetes
         ExecStartPost=/usr/bin/cp /home/core/assets/auth/kubeconfig /etc/kubernetes/
         ExecStartPost=/usr/bin/chown -R core:core /home/core/assets
@@ -45,8 +54,8 @@ coreos:
       command: "start"
       content: |
         [Unit]
-        Requires=docker.service flanneld.service setup-bootkube.service
-        After=docker.service flanneld.service setup-bootkube.service
+        Requires=docker.service etcd2.service flanneld.service setup-bootkube.service
+        After=docker.service etcd2.service flanneld.service setup-bootkube.service
 
         [Service]
         Environment=KUBELET_ACI=${kubelet_repo}
@@ -69,6 +78,7 @@ coreos:
           --cluster_dns=${kubelet_cluster_dns} \
           --cluster_domain=cluster.local \
           --config=/etc/kubernetes/manifests \
+          --register-schedulable=false \
           --cloud-provider=aws
 
         Restart=always
