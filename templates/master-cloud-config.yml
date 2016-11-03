@@ -38,7 +38,8 @@ coreos:
           --volume home,kind=host,source=/home/core --mount volume=home,target=/core \
           --trust-keys-from-https --net=host ${bootkube_repo}:${bootkube_version} \
           --exec /bootkube -- render --asset-dir=/core/assets \
-          --api-servers=https://$${COREOS_PUBLIC_IPV4}:443,https://$${COREOS_PRIVATE_IPV4}:443
+          --api-servers=https://$${COREOS_PUBLIC_IPV4}:443,https://$${COREOS_PRIVATE_IPV4}:443 \
+          --self-host-kubelet
         ExecStartPost=/usr/bin/mkdir -p /etc/kubernetes
         ExecStartPost=/usr/bin/cp /home/core/assets/auth/kubeconfig /etc/kubernetes/
         ExecStartPost=/usr/bin/chown -R core:core /home/core/assets
