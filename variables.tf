@@ -49,7 +49,7 @@ variable "kubelet_repo" {
 
 variable "kubelet_version" {
   description = "The kubelet docker image tag"
-  default     = "v1.3.4_coreos.0"
+  default     = "v1.4.5_coreos.0"
   type        = "string"
 }
 
