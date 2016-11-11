@@ -146,6 +146,12 @@ resource "aws_launch_configuration" "k8s-minion" {
   security_groups      = ["${aws_security_group.k8s-minion.id}"]
   user_data            = "${data.template_file.minion-cloud-config.rendered}"
 
+  root_block_device {
+    volume_type = "${var.minion_root_device_type}"
+    volume_size = "${var.minion_root_device_size}"
+    iops        = "${var.minion_root_device_iops}"
+  }
+
   lifecycle {
     create_before_destroy = true
   }

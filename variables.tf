@@ -149,6 +149,24 @@ variable "minion_instance_type" {
   type        = "string"
 }
 
+variable "minion_root_device_type" {
+  description = "The type of the root device to use. standard, gp2 or io1"
+  default     = "gp2"
+  type        = "string"
+}
+
+variable "minion_root_device_iops" {
+  description = "The IOPS for the root device, must be set if the type is io1"
+  default     = "0"
+  type        = "string"
+}
+
+variable "minion_root_device_size" {
+  description = "The size of the root device in Gb"
+  default     = "100"
+  type        = "string"
+}
+
 variable "minion_scaling_group_min_size" {
   description = "The minimum size of the minion scaling group"
   default     = "2"
