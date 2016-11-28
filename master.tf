@@ -56,7 +56,6 @@ resource "aws_security_group" "k8s-master" {
   tags {
     KubernetesCluster = "${var.name}"
     role              = "master"
-    env               = "${var.env}"
   }
 }
 
