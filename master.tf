@@ -152,6 +152,12 @@ resource "aws_instance" "k8s-master" {
   disable_api_termination = "${var.master_disable_api_termination}"
   vpc_security_group_ids  = ["${aws_security_group.k8s-master.id}"]
 
+  root_block_device {
+    volume_type           = "gp2"
+    volume_size           = "100"
+    delete_on_termination = true
+  }
+
   tags {
     Name              = "k8s-master-${count.index}"
     role              = "master"
